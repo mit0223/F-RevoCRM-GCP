@@ -18,9 +18,9 @@ output "https_url" {
   value       = var.enable_ssl ? "https://${var.domain_name}" : "SSL not enabled"
 }
 
-output "ssl_certificate_status" {
-  description = "Status of the SSL certificate"
-  value       = var.enable_ssl ? google_compute_managed_ssl_certificate.app_ssl_cert[0].managed[0].status : "SSL not enabled"
+output "ssl_certificate_name" {
+  description = "The name of the managed SSL certificate."
+  value       = var.enable_ssl ? google_compute_managed_ssl_certificate.app_ssl_cert[0].name : "SSL not enabled"
 }
 
 output "instance_group_manager" {

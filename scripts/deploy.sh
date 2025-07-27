@@ -54,12 +54,22 @@ setup_gcp_auth() {
     print_status "Setting up GCP authentication..."
     
     echo "$GCP_SERVICE_ACCOUNT_KEY" | base64 -d > /tmp/gcp-key.json
+    export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json
     gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
     gcloud config set project "$GCP_PROJECT_ID"
     
     print_success "GCP authentication configured"
+}
+
+# Cleanup GCP credentials file
+cleanup_gcp_auth() {
+    print_status "Cleaning up GCP credentials..."
     rm -f /tmp/gcp-key.json
 }
+
+# Trap to ensure cleanup
+trap cleanup_gcp_auth EXIT
+
 
 # Login to Docker Hub
 docker_login() {

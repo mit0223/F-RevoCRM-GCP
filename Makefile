@@ -41,7 +41,7 @@ status: ## Check the status of the deployment
 # Check SSL certificate status
 ssl-status: ## Check SSL certificate status
 	@echo "Checking SSL certificate status..."
-	@cd terraform && terraform output ssl_certificate_status
+	@gcloud compute ssl-certificates describe $$(cd terraform && terraform output -raw ssl_certificate_name) --global --format="value(managed.status)"
 
 # Clean up local files
 clean: ## Clean up local temporary files

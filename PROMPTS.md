@@ -504,3 +504,226 @@ Secretsの設定: 新しく追加した db_user と db_password を、GitHubのC
 アプリケーションの設定: F-RevoCRMの config.inc.php で、データベースの接続情報をCloud SQLインスタンスに向ける必要があります。これには、db_connection_name や db_private_ip の出力値を使用します。この設定は、コンテナ起動時に環境変数経由で動的に行うのが一般的です。
 まずは、TerraformでCloud SQLインスタンスが作成されることをご確認ください。
 
+## 13. Dockerfile は断念
+
+Dockerfileは https://github.com/thinkingreed-inc/F-RevoCRM/tree/main/docker/php ここから持ってきた。
+
+
+# 14. GCPデプロイエラー
+
+make phase2 でエラーが発生しました。
+Error: Unsupported attribute
+│
+│ on outputs.tf line 23, in output "ssl_certificate_status":
+│ 23: value = var.enable_ssl ? google_compute_managed_ssl_certificate.app_ssl_cert[0].managed[0].status : "SSL not enabled"
+│
+│ This object has no argument
+
+はい、承知いたしました。エラーを修正します。
+
+まず、エラーの原因となっている terraform/outputs.tf を修正し、status 属性を持たない ssl_certificate_status 出力を削除して、代わりに証明書名を出力する ssl_certificate_name を追加します。
+
+次に、Makefile の ssl-status ターゲットを、新しい ssl_certificate_name 出力を使って gcloud コマンドで証明書の実際の状態を確認するように修正します。
+
+以下の内容で各ファイルを更新します。
+
+terraform/outputs.tf を修正:
+
+Makefile を修正:
+
+承知いたしました。先ほど提案した内容で修正します。
+
+outputs.tf の ssl_certificate_status を修正します。
+Makefile の ssl-status ターゲットを gcloud コマンドを使うように修正します。
+まず、outputs.tf を修正します。
+
+outputs.tf+3-3
+Makefile+1-1
+承知いたしました。ご指示いただいた通り、Terraformの構成を修正します。
+
+outputs.tf: エラーの原因となっていた ssl_certificate_status の出力を、証明書名を出力する ssl_certificate_name に置き換えました。
+Makefile: ssl-status ターゲットが、gcloud コマンドを使って直接SSL証明書の状態を問い合わせるように修正しました。
+これで make phase2 のエラーは解消され、make ssl-status で証明書の状態を正しく確認できるようになります。
+
+# 15. GCPデプロイエラー2
+
+make phase2 でエラーが発生しました。
+Error: Attempted to load application default credentials since neither credentials nor access_token was set in the provider block. No credentials loaded. To use your gcloud credentials, run 'gcloud auth application-default login'
+│
+│ with provider["registry.terraform.io/hashicorp/google"],
+│ on providers.tf line 15, in provider "google":
+│ 15: provider "google" {
+│
+│ google: could not find default credentials. See
+│ https://cloud.google.com/docs/authentication/external/set-up-adc for more information
+╵
+修正してもらえますか
+
+## 対応
+
+承知いたしました。make phase2 でのGCP認証エラーを解決するため、deploy.sh を修正します。
+
+Terraformの実行前に、GitHub Secretsに設定されたサービスアカウントキーを使ってGCP認証を行う処理を追加します。
+
+deploy.sh の 1 から 100 行を読み取り
+
+deploy.sh+10-0
+承知いたしました。GCPの認証エラーを修正します。
+
+deploy.sh を更新し、TerraformがGCPの認証情報を正しく利用できるようにします。
+
+具体的には、setup_gcp_auth 関数内で、デコードしたサービスアカウントキーを一時ファイルに保存し、そのパスを環境変数 GOOGLE_APPLICATION_CREDENTIALS に設定します。これにより、Terraformプロバイダが自動的に認証情報を読み込むようになります。
+
+また、スクリプト終了時に認証キーファイルが確実に削除されるように、trap を使用したクリーンアップ処理を追加しました。
+
+この修正により、make phase2 を実行した際の認証エラーが解消されるはずです。
+
+# 15. GCPデプロイエラー3
+
+make phase2 でエラーが発生しました。
+Error: Error when reading or editing Project Service pdns-284302/servicenetworking.googleapis.com: googleapi: Error 403: Cloud Resource Manager API has not been used in project 632159363204 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+│ Details:
+│ [
+│ {
+│ "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+│ "domain": "googleapis.com",
+│ "metadata": {
+│ "activationUrl": "https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204",
+│ "consumer": "projects/632159363204",
+│ "containerInfo": "632159363204",
+│ "service": "cloudresourcemanager.googleapis.com",
+│ "serviceTitle": "Cloud Resource Manager API"
+│ },
+│ "reason": "SERVICE_DISABLED"
+│ },
+│ {
+│ "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+│ "locale": "en-US",
+│ "message": "Cloud Resource Manager API has not been used in project 632159363204 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+│ },
+│ {
+│ "@type": "type.googleapis.com/google.rpc.Help",
+│ "links": [
+│ {
+│ "description": "Google developers console API activation",
+│ "url": "https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204"
+│ }
+│ ]
+│ }
+│ ]
+│ , accessNotConfigured
+│
+│ with google_project_service.service_networking,
+│ on database.tf line 2, in resource "google_project_service" "service_networking":
+│ 2: resource "google_project_service" "service_networking" {
+│
+╵
+╷
+│ Error: Error when reading or editing Project Service pdns-284302/certificatemanager.googleapis.com: googleapi: Error 403: Cloud Resource Manager API has not been used in project 632159363204 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+│ Details:
+│ [
+│ {
+│ "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+│ "domain": "googleapis.com",
+│ "metadata": {
+│ "activationUrl": "https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204",
+│ "consumer": "projects/632159363204",
+│ "containerInfo": "632159363204",
+│ "service": "cloudresourcemanager.googleapis.com",
+│ "serviceTitle": "Cloud Resource Manager API"
+│ },
+│ "reason": "SERVICE_DISABLED"
+│ },
+│ {
+│ "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+│ "locale": "en-US",
+│ "message": "Cloud Resource Manager API has not been used in project 632159363204 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+│ },
+│ {
+│ "@type": "type.googleapis.com/google.rpc.Help",
+│ "links": [
+│ {
+│ "description": "Google developers console API activation",
+│ "url": "https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204"
+│ }
+│ ]
+│ }
+│ ]
+│ , accessNotConfigured
+│
+│ with google_project_service.apis["certificatemanager.googleapis.com"],
+│ on network.tf line 2, in resource "google_project_service" "apis":
+│ 2: resource "google_project_service" "apis" {
+│
+╵
+╷
+│ Error: Error when reading or editing Project Service pdns-284302/cloudbuild.googleapis.com: googleapi: Error 403: Cloud Resource Manager API has not been used in project 632159363204 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+│ Details:
+│ [
+│ {
+│ "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+│ "domain": "googleapis.com",
+│ "metadata": {
+│ "activationUrl": "https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204",
+│ "consumer": "projects/632159363204",
+│ "containerInfo": "632159363204",
+│ "service": "cloudresourcemanager.googleapis.com",
+│ "serviceTitle": "Cloud Resource Manager API"
+│ },
+│ "reason": "SERVICE_DISABLED"
+│ },
+│ {
+│ "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+│ "locale": "en-US",
+│ "message": "Cloud Resource Manager API has not been used in project 632159363204 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+│ },
+│ {
+│ "@type": "type.googleapis.com/google.rpc.Help",
+│ "links": [
+│ {
+│ "description": "Google developers console API activation",
+│ "url": "https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=632159363204"
+│ }
+│ ]
+│ }
+│ ]
+│ , accessNotConfigured
+│
+│ with google_project_service.apis["cloudbuild.googleapis.com"],
+│ on network.tf line 2, in resource "google_project_service" "apis":
+│ 2: resource "google_project_service" "apis" {
+│
+╵
+修正してもらえますか。
+
+# 対応
+
+承知いたしました。make phase2 で発生したGCPのAPIが無効になっているエラーを修正します。
+
+Terraformの実行前に必要なAPIを自動で有効化する処理を scripts/deploy.sh に追加します。これにより、手動でGCPコンソールからAPIを有効にする手間が省けます。
+
+scripts/deploy.sh を以下のように更新しました。
+
+enable_gcp_apis 関数の追加: cloudresourcemanager.googleapis.com を含む、デプロイに必要なGCP APIのリストを定義し、gcloud services enable コマンドで一括して有効化します。
+関数の呼び出し: Terraformのコマンドが実行される前の段階で enable_gcp_apis を呼び出すようにしました。
+この修正により、APIが原因のエラーは解消されるはずです。
+
+承知いたしました。make phase2 で発生したGCP APIの有効化に関するエラーを修正します。
+
+Terraformの実行前に必要なAPIを強制的に有効化する処理を scripts/deploy.sh に追加します。これにより、TerraformがAPIを有効化しようとして権限エラーになる問題を回避します。
+
+scripts/deploy.sh を修正し、enable_gcp_apis 関数を追加して、Terraformの実行前に呼び出すように変更しました。
+
+deploy.sh の 1 から 100 行を読み取り
+
+承知いたしました。make phase2 で発生したGCPのAPI有効化に関するエラーを修正します。
+
+ご提案した通り、Terraformの実行前に必要なAPIを強制的に有効化する処理を scripts/deploy.sh に追加します。
+
+scripts/deploy.sh に、APIを有効化する enable_gcp_apis 関数を追加し、Terraformの処理が開始される前にこの関数を呼び出すように修正しました。これにより、Terraformが必要とするすべてのGCPサービスが事前に有効化され、エラーが解消されます。
+
+承知いたしました。GCPのAPI有効化エラーを修正するため、ご提案した通り deploy.sh を更新します。
+
+Terraformの実行前に必要なAPIを有効化する処理を追加しました。これにより、make phase2 を実行した際にAPIが無効であることによるエラーが解消されるはずです。
+
+deploy.sh を修正しました。
