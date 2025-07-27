@@ -182,3 +182,13 @@ GPGキーの取り扱いを改善
 ✅ gcloud CLI の確実なインストール
 ✅ 開発体験の向上（zsh + Oh My Zsh）
 これで devcontainer のリビルドが成功するはずです。再度コンテナをリビルドしてみてください！
+
+# 6. devcontainer.json の git-lfs の設定
+
+git push でエラーになりました。開発コンテナに git-lfs を追加してください。
+This repository is configured for Git LFS but 'git-lfs' was not found on your path. If you no longer wish to use Git LFS, remove this hook by deleting the 'pre-push' file in the hooks directory (set by 'core.hookspath'; usually '.git/hooks').
+
+## 対応
+Copilot の準備に時間がかかりすぎました。GitHub にサインインしていること、および拡張機能 GitHub.copilot-chat がインストールされ、有効になっていることを確認してください。
+というエラーになった。ページを再読み込みしても治らない。
+手動で git-lfs をインストールして、commmit & push。
