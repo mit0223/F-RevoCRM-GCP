@@ -1,0 +1,30 @@
+{
+  "name": "f-revocrm-gcp-deploy",
+  "version": "1.0.0",
+  "description": "F-RevoCRM deployment to GCP with Terraform",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "build": "echo 'Build step - adjust based on F-RevoCRM requirements'",
+    "test": "echo 'No tests specified'",
+    "dev": "nodemon index.js",
+    "health": "echo 'Health check endpoint'"
+  },
+  "keywords": [
+    "crm",
+    "gcp",
+    "terraform",
+    "docker"
+  ],
+  "author": "F-RevoCRM Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

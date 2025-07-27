@@ -5,9 +5,6 @@ terraform/*.tfstate.backup
 terraform/.terraform.lock.hcl
 terraform/terraform.tfvars
 
-# Docker
-.dockerignore
-
 # IDE
 .vscode/
 .idea/
@@ -30,8 +27,9 @@ yarn-error.log*
 .env.production.local
 
 # GCP
-*.json
 gcp-key.json
+*-key.json
+service-account*.json
 
 # Build
 dist/
