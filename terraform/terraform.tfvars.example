@@ -1,0 +1,9 @@
+# Environment variables for Terraform
+gcp_project_id = ""        # Set via environment variable
+gcp_region     = "asia-northeast1"
+gcp_zone       = "asia-northeast1-a"
+domain_name    = ""        # Set via environment variable
+docker_image   = ""        # Set via environment variable
+app_name       = "f-revocrm"
+environment    = "prod"
+enable_ssl     = false     # Will be set to true in phase 2

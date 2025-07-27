@@ -1,0 +1,153 @@
+# Reserve static IP address
+resource "google_compute_global_address" "static_ip" {
+  name = "${var.app_name}-static-ip"
+}
+
+# Instance template
+resource "google_compute_instance_template" "app_template" {
+  name_prefix  = "${var.app_name}-template-"
+  machine_type = "e2-medium"
+  region       = var.gcp_region
+
+  disk {
+    source_image = "cos-cloud/cos-stable"
+    auto_delete  = true
+    boot         = true
+    disk_size_gb = 20
+    disk_type    = "pd-standard"
+  }
+
+  network_interface {
+    network    = google_compute_network.vpc.id
+    subnetwork = google_compute_subnetwork.subnet.id
+  }
+
+  metadata = {
+    gce-container-declaration = templatefile("${path.module}/container-declaration.yaml", {
+      docker_image = var.docker_image
+    })
+  }
+
+  tags = ["http-server", "https-server", "ssh-access"]
+
+  service_account {
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Managed instance group
+resource "google_compute_region_instance_group_manager" "app_group" {
+  name   = "${var.app_name}-group"
+  region = var.gcp_region
+
+  base_instance_name = var.app_name
+  target_size        = 1
+
+  version {
+    instance_template = google_compute_instance_template.app_template.id
+  }
+
+  named_port {
+    name = "http"
+    port = 3000
+  }
+
+  auto_healing_policies {
+    health_check      = google_compute_health_check.app_health_check.id
+    initial_delay_sec = 300
+  }
+}
+
+# Health check
+resource "google_compute_health_check" "app_health_check" {
+  name = "${var.app_name}-health-check"
+
+  timeout_sec        = 5
+  check_interval_sec = 30
+
+  http_health_check {
+    port         = 3000
+    request_path = "/health"
+  }
+}
+
+# Backend service
+resource "google_compute_backend_service" "app_backend" {
+  name          = "${var.app_name}-backend"
+  health_checks = [google_compute_health_check.app_health_check.id]
+  port_name     = "http"
+  protocol      = "HTTP"
+  timeout_sec   = 30
+
+  backend {
+    group           = google_compute_region_instance_group_manager.app_group.instance_group
+    balancing_mode  = "UTILIZATION"
+    capacity_scaler = 1.0
+  }
+}
+
+# URL map for HTTP
+resource "google_compute_url_map" "app_url_map_http" {
+  name            = "${var.app_name}-url-map-http"
+  default_service = google_compute_backend_service.app_backend.id
+
+  # Redirect HTTP to HTTPS when SSL is enabled
+  dynamic "default_url_redirect" {
+    for_each = var.enable_ssl ? [1] : []
+    content {
+      https_redirect = true
+      strip_query    = false
+    }
+  }
+}
+
+# URL map for HTTPS (only when SSL is enabled)
+resource "google_compute_url_map" "app_url_map_https" {
+  count           = var.enable_ssl ? 1 : 0
+  name            = "${var.app_name}-url-map-https"
+  default_service = google_compute_backend_service.app_backend.id
+}
+
+# HTTP(S) proxy
+resource "google_compute_target_http_proxy" "app_http_proxy" {
+  name    = "${var.app_name}-http-proxy"
+  url_map = google_compute_url_map.app_url_map_http.id
+}
+
+resource "google_compute_target_https_proxy" "app_https_proxy" {
+  count           = var.enable_ssl ? 1 : 0
+  name            = "${var.app_name}-https-proxy"
+  url_map         = google_compute_url_map.app_url_map_https[0].id
+  ssl_certificates = [google_compute_managed_ssl_certificate.app_ssl_cert[0].id]
+}
+
+# Global forwarding rule for HTTP
+resource "google_compute_global_forwarding_rule" "app_http_forwarding_rule" {
+  name       = "${var.app_name}-http-forwarding-rule"
+  target     = google_compute_target_http_proxy.app_http_proxy.id
+  port_range = "80"
+  ip_address = google_compute_global_address.static_ip.address
+}
+
+# Global forwarding rule for HTTPS (only when SSL is enabled)
+resource "google_compute_global_forwarding_rule" "app_https_forwarding_rule" {
+  count      = var.enable_ssl ? 1 : 0
+  name       = "${var.app_name}-https-forwarding-rule"
+  target     = google_compute_target_https_proxy.app_https_proxy[0].id
+  port_range = "443"
+  ip_address = google_compute_global_address.static_ip.address
+}
+
+# Managed SSL certificate (only when SSL is enabled)
+resource "google_compute_managed_ssl_certificate" "app_ssl_cert" {
+  count = var.enable_ssl ? 1 : 0
+  name  = "${var.app_name}-ssl-cert"
+
+  managed {
+    domains = [var.domain_name]
+  }
+}
