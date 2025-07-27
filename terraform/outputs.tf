@@ -23,12 +23,14 @@ output "ssl_certificate_name" {
   value       = var.enable_ssl ? google_compute_managed_ssl_certificate.app_ssl_cert[0].name : "SSL not enabled"
 }
 
-output "instance_group_manager" {
-  description = "Instance group manager details"
-  value = {
-    name   = google_compute_region_instance_group_manager.app_group.name
-    region = google_compute_region_instance_group_manager.app_group.region
-  }
+output "cloudrun_service_url" {
+  description = "Cloud Run service URL"
+  value       = google_cloud_run_v2_service.app_service.uri
+}
+
+output "cloudrun_service_name" {
+  description = "Cloud Run service name"
+  value       = google_cloud_run_v2_service.app_service.name
 }
 
 output "db_connection_name" {

@@ -23,3 +23,19 @@ provider "google-beta" {
   region  = var.gcp_region
   zone    = var.gcp_zone
 }
+
+# Enable necessary APIs
+resource "google_project_service" "cloudrun_api" {
+  service            = "run.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "vpcaccess_api" {
+  service            = "vpcaccess.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "secretmanager_api" {
+  service            = "secretmanager.googleapis.com"
+  disable_on_destroy = false
+}

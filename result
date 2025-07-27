@@ -1,0 +1,648 @@
+Terraform will perform the following actions:
+
+  # google_compute_backend_service.app_backend will be created
+  + resource "google_compute_backend_service" "app_backend" {
+      + connection_draining_timeout_sec = 300
+      + creation_timestamp              = (known after apply)
+      + fingerprint                     = (known after apply)
+      + generated_id                    = (known after apply)
+      + health_checks                   = (known after apply)
+      + id                              = (known after apply)
+      + load_balancing_scheme           = "EXTERNAL"
+      + name                            = "f-revocrm-backend"
+      + port_name                       = "http"
+      + project                         = "pdns-284302"
+      + protocol                        = "HTTP"
+      + self_link                       = (known after apply)
+      + session_affinity                = (known after apply)
+      + timeout_sec                     = 30
+
+      + backend {
+          + balancing_mode               = "UTILIZATION"
+          + capacity_scaler              = 1
+          + group                        = (known after apply)
+          + max_connections              = (known after apply)
+          + max_connections_per_endpoint = (known after apply)
+          + max_connections_per_instance = (known after apply)
+          + max_rate                     = (known after apply)
+          + max_rate_per_endpoint        = (known after apply)
+          + max_rate_per_instance        = (known after apply)
+          + max_utilization              = (known after apply)
+        }
+    }
+
+  # google_compute_firewall.allow_http will be created
+  + resource "google_compute_firewall" "allow_http" {
+      + creation_timestamp = (known after apply)
+      + destination_ranges = (known after apply)
+      + direction          = (known after apply)
+      + enable_logging     = (known after apply)
+      + id                 = (known after apply)
+      + name               = "f-revocrm-allow-http"
+      + network            = "f-revocrm-vpc"
+      + priority           = 1000
+      + project            = "pdns-284302"
+      + self_link          = (known after apply)
+      + source_ranges      = [
+          + "0.0.0.0/0",
+        ]
+      + target_tags        = [
+          + "http-server",
+        ]
+
+      + allow {
+          + ports    = [
+              + "80",
+            ]
+          + protocol = "tcp"
+        }
+    }
+
+  # google_compute_firewall.allow_https will be created
+  + resource "google_compute_firewall" "allow_https" {
+      + creation_timestamp = (known after apply)
+      + destination_ranges = (known after apply)
+      + direction          = (known after apply)
+      + enable_logging     = (known after apply)
+      + id                 = (known after apply)
+      + name               = "f-revocrm-allow-https"
+      + network            = "f-revocrm-vpc"
+      + priority           = 1000
+      + project            = "pdns-284302"
+      + self_link          = (known after apply)
+      + source_ranges      = [
+          + "0.0.0.0/0",
+        ]
+      + target_tags        = [
+          + "https-server",
+        ]
+
+      + allow {
+          + ports    = [
+              + "443",
+            ]
+          + protocol = "tcp"
+        }
+    }
+
+  # google_compute_firewall.allow_ssh will be created
+  + resource "google_compute_firewall" "allow_ssh" {
+      + creation_timestamp = (known after apply)
+      + destination_ranges = (known after apply)
+      + direction          = (known after apply)
+      + enable_logging     = (known after apply)
+      + id                 = (known after apply)
+      + name               = "f-revocrm-allow-ssh"
+      + network            = "f-revocrm-vpc"
+      + priority           = 1000
+      + project            = "pdns-284302"
+      + self_link          = (known after apply)
+      + source_ranges      = [
+          + "0.0.0.0/0",
+        ]
+      + target_tags        = [
+          + "ssh-access",
+        ]
+
+      + allow {
+          + ports    = [
+              + "22",
+            ]
+          + protocol = "tcp"
+        }
+    }
+
+  # google_compute_global_address.private_ip_address will be created
+  + resource "google_compute_global_address" "private_ip_address" {
+      + address            = (known after apply)
+      + address_type       = "INTERNAL"
+      + creation_timestamp = (known after apply)
+      + effective_labels   = (known after apply)
+      + id                 = (known after apply)
+      + label_fingerprint  = (known after apply)
+      + name               = "private-ip-for-sql"
+      + network            = (known after apply)
+      + prefix_length      = 16
+      + project            = "pdns-284302"
+      + purpose            = "VPC_PEERING"
+      + self_link          = (known after apply)
+      + terraform_labels   = (known after apply)
+    }
+
+  # google_compute_global_address.static_ip will be created
+  + resource "google_compute_global_address" "static_ip" {
+      + address            = (known after apply)
+      + creation_timestamp = (known after apply)
+      + effective_labels   = (known after apply)
+      + id                 = (known after apply)
+      + label_fingerprint  = (known after apply)
+      + name               = "f-revocrm-static-ip"
+      + prefix_length      = (known after apply)
+      + project            = "pdns-284302"
+      + self_link          = (known after apply)
+      + terraform_labels   = (known after apply)
+    }
+
+  # google_compute_global_forwarding_rule.app_http_forwarding_rule will be created
+  + resource "google_compute_global_forwarding_rule" "app_http_forwarding_rule" {
+      + base_forwarding_rule  = (known after apply)
+      + effective_labels      = (known after apply)
+      + id                    = (known after apply)
+      + ip_address            = (known after apply)
+      + ip_protocol           = (known after apply)
+      + label_fingerprint     = (known after apply)
+      + load_balancing_scheme = "EXTERNAL"
+      + name                  = "f-revocrm-http-forwarding-rule"
+      + network               = (known after apply)
+      + port_range            = "80"
+      + project               = "pdns-284302"
+      + psc_connection_id     = (known after apply)
+      + psc_connection_status = (known after apply)
+      + self_link             = (known after apply)
+      + subnetwork            = (known after apply)
+      + target                = (known after apply)
+      + terraform_labels      = (known after apply)
+    }
+
+  # google_compute_health_check.app_health_check will be created
+  + resource "google_compute_health_check" "app_health_check" {
+      + check_interval_sec  = 30
+      + creation_timestamp  = (known after apply)
+      + healthy_threshold   = 2
+      + id                  = (known after apply)
+      + name                = "f-revocrm-health-check"
+      + project             = "pdns-284302"
+      + self_link           = (known after apply)
+      + timeout_sec         = 5
+      + type                = (known after apply)
+      + unhealthy_threshold = 2
+
+      + http_health_check {
+          + port         = 80
+          + proxy_header = "NONE"
+          + request_path = "/"
+        }
+    }
+
+  # google_compute_instance_template.app_template will be created
+  + resource "google_compute_instance_template" "app_template" {
+      + can_ip_forward       = false
+      + effective_labels     = (known after apply)
+      + id                   = (known after apply)
+      + machine_type         = "e2-medium"
+      + metadata             = {
+          + "gce-container-declaration" = <<-EOT
+                spec:
+                  containers:
+                    - name: f-revocrm
+                      image: 
+                      ports:
+                        - containerPort: 80
+                          hostPort: 80
+                      resources:
+                        requests:
+                          memory: "512Mi"
+                          cpu: "250m"
+                        limits:
+                          memory: "1Gi"
+                          cpu: "500m"
+                  restartPolicy: Always
+            EOT
+        }
+      + metadata_fingerprint = (known after apply)
+      + name                 = (known after apply)
+      + name_prefix          = "f-revocrm-template-"
+      + project              = "pdns-284302"
+      + region               = "asia-northeast1"
+      + self_link            = (known after apply)
+      + self_link_unique     = (known after apply)
+      + tags                 = [
+          + "http-server",
+          + "https-server",
+          + "ssh-access",
+        ]
+      + tags_fingerprint     = (known after apply)
+      + terraform_labels     = (known after apply)
+
+      + disk {
+          + auto_delete      = true
+          + boot             = true
+          + device_name      = (known after apply)
+          + disk_size_gb     = 20
+          + disk_type        = "pd-standard"
+          + interface        = (known after apply)
+          + mode             = (known after apply)
+          + provisioned_iops = (known after apply)
+          + source_image     = "cos-cloud/cos-stable"
+          + type             = (known after apply)
+        }
+
+      + network_interface {
+          + internal_ipv6_prefix_length = (known after apply)
+          + ipv6_access_type            = (known after apply)
+          + ipv6_address                = (known after apply)
+          + name                        = (known after apply)
+          + network                     = (known after apply)
+          + stack_type                  = (known after apply)
+          + subnetwork                  = (known after apply)
+          + subnetwork_project          = (known after apply)
+        }
+
+      + service_account {
+          + email  = (known after apply)
+          + scopes = [
+              + "https://www.googleapis.com/auth/cloud-platform",
+            ]
+        }
+    }
+
+  # google_compute_network.vpc will be created
+  + resource "google_compute_network" "vpc" {
+      + auto_create_subnetworks                   = false
+      + delete_default_routes_on_create           = false
+      + gateway_ipv4                              = (known after apply)
+      + id                                        = (known after apply)
+      + internal_ipv6_range                       = (known after apply)
+      + mtu                                       = (known after apply)
+      + name                                      = "f-revocrm-vpc"
+      + network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+      + numeric_id                                = (known after apply)
+      + project                                   = "pdns-284302"
+      + routing_mode                              = (known after apply)
+      + self_link                                 = (known after apply)
+    }
+
+  # google_compute_region_instance_group_manager.app_group will be created
+  + resource "google_compute_region_instance_group_manager" "app_group" {
+      + base_instance_name               = "f-revocrm"
+      + creation_timestamp               = (known after apply)
+      + distribution_policy_target_shape = (known after apply)
+      + distribution_policy_zones        = (known after apply)
+      + fingerprint                      = (known after apply)
+      + id                               = (known after apply)
+      + instance_group                   = (known after apply)
+      + list_managed_instances_results   = "PAGELESS"
+      + name                             = "f-revocrm-group"
+      + project                          = "pdns-284302"
+      + region                           = "asia-northeast1"
+      + self_link                        = (known after apply)
+      + status                           = (known after apply)
+      + target_size                      = 1
+      + wait_for_instances               = false
+      + wait_for_instances_status        = "STABLE"
+
+      + auto_healing_policies {
+          + health_check      = (known after apply)
+          + initial_delay_sec = 300
+        }
+
+      + named_port {
+          + name = "http"
+          + port = 80
+        }
+
+      + version {
+          + instance_template = (known after apply)
+        }
+    }
+
+  # google_compute_subnetwork.subnet will be created
+  + resource "google_compute_subnetwork" "subnet" {
+      + creation_timestamp         = (known after apply)
+      + external_ipv6_prefix       = (known after apply)
+      + fingerprint                = (known after apply)
+      + gateway_address            = (known after apply)
+      + id                         = (known after apply)
+      + internal_ipv6_prefix       = (known after apply)
+      + ip_cidr_range              = "10.0.0.0/24"
+      + ipv6_cidr_range            = (known after apply)
+      + name                       = "f-revocrm-subnet"
+      + network                    = (known after apply)
+      + private_ip_google_access   = (known after apply)
+      + private_ipv6_google_access = (known after apply)
+      + project                    = "pdns-284302"
+      + purpose                    = (known after apply)
+      + region                     = "asia-northeast1"
+      + secondary_ip_range         = (known after apply)
+      + self_link                  = (known after apply)
+      + stack_type                 = (known after apply)
+    }
+
+  # google_compute_target_http_proxy.app_http_proxy will be created
+  + resource "google_compute_target_http_proxy" "app_http_proxy" {
+      + creation_timestamp = (known after apply)
+      + id                 = (known after apply)
+      + name               = "f-revocrm-http-proxy"
+      + project            = "pdns-284302"
+      + proxy_bind         = (known after apply)
+      + proxy_id           = (known after apply)
+      + self_link          = (known after apply)
+      + url_map            = (known after apply)
+    }
+
+  # google_compute_url_map.app_url_map_http will be created
+  + resource "google_compute_url_map" "app_url_map_http" {
+      + creation_timestamp = (known after apply)
+      + default_service    = (known after apply)
+      + fingerprint        = (known after apply)
+      + id                 = (known after apply)
+      + map_id             = (known after apply)
+      + name               = "f-revocrm-url-map-http"
+      + project            = "pdns-284302"
+      + self_link          = (known after apply)
+    }
+
+  # google_project_service.apis["artifactregistry.googleapis.com"] will be created
+  + resource "google_project_service" "apis" {
+      + disable_dependent_services = true
+      + disable_on_destroy         = false
+      + id                         = (known after apply)
+      + project                    = "pdns-284302"
+      + service                    = "artifactregistry.googleapis.com"
+    }
+
+  # google_project_service.apis["certificatemanager.googleapis.com"] will be created
+  + resource "google_project_service" "apis" {
+      + disable_dependent_services = true
+      + disable_on_destroy         = false
+      + id                         = (known after apply)
+      + project                    = "pdns-284302"
+      + service                    = "certificatemanager.googleapis.com"
+    }
+
+  # google_project_service.apis["cloudbuild.googleapis.com"] will be created
+  + resource "google_project_service" "apis" {
+      + disable_dependent_services = true
+      + disable_on_destroy         = false
+      + id                         = (known after apply)
+      + project                    = "pdns-284302"
+      + service                    = "cloudbuild.googleapis.com"
+    }
+
+  # google_project_service.apis["compute.googleapis.com"] will be created
+  + resource "google_project_service" "apis" {
+      + disable_dependent_services = true
+      + disable_on_destroy         = false
+      + id                         = (known after apply)
+      + project                    = "pdns-284302"
+      + service                    = "compute.googleapis.com"
+    }
+
+  # google_project_service.apis["container.googleapis.com"] will be created
+  + resource "google_project_service" "apis" {
+      + disable_dependent_services = true
+      + disable_on_destroy         = false
+      + id                         = (known after apply)
+      + project                    = "pdns-284302"
+      + service                    = "container.googleapis.com"
+    }
+
+  # google_project_service.service_networking will be created
+  + resource "google_project_service" "service_networking" {
+      + disable_on_destroy = true
+      + id                 = (known after apply)
+      + project            = "pdns-284302"
+      + service            = "servicenetworking.googleapis.com"
+    }
+
+  # google_service_networking_connection.private_vpc_connection will be created
+  + resource "google_service_networking_connection" "private_vpc_connection" {
+      + id                      = (known after apply)
+      + network                 = (known after apply)
+      + peering                 = (known after apply)
+      + reserved_peering_ranges = [
+          + "private-ip-for-sql",
+        ]
+      + service                 = "servicenetworking.googleapis.com"
+    }
+
+  # google_sql_database.frevocrm_db will be created
+  + resource "google_sql_database" "frevocrm_db" {
+      + charset         = "utf8mb4"
+      + collation       = "utf8mb4_bin"
+      + deletion_policy = "DELETE"
+      + id              = (known after apply)
+      + instance        = "f-revocrm-mysql"
+      + name            = "frevocrm"
+      + project         = "pdns-284302"
+      + self_link       = (known after apply)
+    }
+
+  # google_sql_database_instance.mysql_instance will be created
+  + resource "google_sql_database_instance" "mysql_instance" {
+      + available_maintenance_versions = (known after apply)
+      + connection_name                = (known after apply)
+      + database_version               = "MYSQL_8_0"
+      + deletion_protection            = false
+      + dns_name                       = (known after apply)
+      + encryption_key_name            = (known after apply)
+      + first_ip_address               = (known after apply)
+      + id                             = (known after apply)
+      + instance_type                  = (known after apply)
+      + ip_address                     = (known after apply)
+      + maintenance_version            = (known after apply)
+      + master_instance_name           = (known after apply)
+      + name                           = "f-revocrm-mysql"
+      + private_ip_address             = (known after apply)
+      + project                        = "pdns-284302"
+      + psc_service_attachment_link    = (known after apply)
+      + public_ip_address              = (known after apply)
+      + region                         = "asia-northeast1"
+      + self_link                      = (known after apply)
+      + server_ca_cert                 = (sensitive value)
+      + service_account_email_address  = (known after apply)
+
+      + settings {
+          + activation_policy     = "ALWAYS"
+          + availability_type     = "ZONAL"
+          + connector_enforcement = (known after apply)
+          + disk_autoresize       = true
+          + disk_autoresize_limit = 0
+          + disk_size             = (known after apply)
+          + disk_type             = "PD_SSD"
+          + edition               = "ENTERPRISE"
+          + pricing_plan          = "PER_USE"
+          + tier                  = "db-n1-standard-1"
+          + user_labels           = (known after apply)
+          + version               = (known after apply)
+
+          + backup_configuration {
+              + enabled                        = true
+              + start_time                     = (known after apply)
+              + transaction_log_retention_days = (known after apply)
+            }
+
+          + database_flags {
+              + name  = "character_set_server"
+              + value = "utf8mb4"
+            }
+          + database_flags {
+              + name  = "collation_server"
+              + value = "utf8mb4_bin"
+            }
+          + database_flags {
+              + name  = "default_authentication_plugin"
+              + value = "mysql_native_password"
+            }
+          + database_flags {
+              + name  = "default_time_zone"
+              + value = "SYSTEM"
+            }
+          + database_flags {
+              + name  = "general_log"
+              + value = "On"
+            }
+          + database_flags {
+              + name  = "log_queries_not_using_indexes"
+              + value = "Off"
+            }
+          + database_flags {
+              + name  = "log_timestamps"
+              + value = "SYSTEM"
+            }
+          + database_flags {
+              + name  = "long_query_time"
+              + value = "5"
+            }
+          + database_flags {
+              + name  = "slow_query_log"
+              + value = "On"
+            }
+          + database_flags {
+              + name  = "sql_mode"
+              + value = "NO_ENGINE_SUBSTITUTION"
+            }
+
+          + ip_configuration {
+              + ipv4_enabled    = false
+              + private_network = (known after apply)
+              + server_ca_mode  = (known after apply)
+              + ssl_mode        = (known after apply)
+            }
+        }
+    }
+
+  # google_sql_user.frevocrm_user will be created
+  + resource "google_sql_user" "frevocrm_user" {
+      + host                    = (known after apply)
+      + id                      = (known after apply)
+      + instance                = "f-revocrm-mysql"
+      + name                    = (sensitive value)
+      + password                = (sensitive value)
+      + project                 = "pdns-284302"
+      + sql_server_user_details = (known after apply)
+    }
+
+  # time_sleep.wait_for_health_check will be created
+  + resource "time_sleep" "wait_for_health_check" {
+      + create_duration = "30s"
+      + id              = (known after apply)
+    }
+
+Plan: 25 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + db_connection_name     = (known after apply)
+  + db_private_ip          = (known after apply)
+  + domain_name            = "f-revocrm.procube-demo.jp"
+  + http_url               = "http://f-revocrm.procube-demo.jp"
+  + https_url              = "SSL not enabled"
+  + instance_group_manager = {
+      + name   = "f-revocrm-group"
+      + region = "asia-northeast1"
+    }
+  + ssl_certificate_name   = "SSL not enabled"
+  + static_ip_address      = (known after apply)
+google_project_service.apis["container.googleapis.com"]: Creating...
+google_project_service.apis["cloudbuild.googleapis.com"]: Creating...
+google_project_service.apis["compute.googleapis.com"]: Creating...
+google_compute_health_check.app_health_check: Creating...
+google_compute_global_address.static_ip: Creating...
+google_project_service.service_networking: Creating...
+google_project_service.apis["certificatemanager.googleapis.com"]: Creating...
+google_project_service.apis["artifactregistry.googleapis.com"]: Creating...
+google_project_service.apis["compute.googleapis.com"]: Creation complete after 5s [id=pdns-284302/compute.googleapis.com]
+google_project_service.apis["artifactregistry.googleapis.com"]: Creation complete after 5s [id=pdns-284302/artifactregistry.googleapis.com]
+google_project_service.apis["certificatemanager.googleapis.com"]: Creation complete after 5s [id=pdns-284302/certificatemanager.googleapis.com]
+google_project_service.apis["cloudbuild.googleapis.com"]: Creation complete after 5s [id=pdns-284302/cloudbuild.googleapis.com]
+google_project_service.apis["container.googleapis.com"]: Creation complete after 5s [id=pdns-284302/container.googleapis.com]
+google_compute_network.vpc: Creating...
+google_compute_health_check.app_health_check: Still creating... [10s elapsed]
+google_compute_global_address.static_ip: Still creating... [10s elapsed]
+google_project_service.service_networking: Still creating... [10s elapsed]
+google_compute_global_address.static_ip: Creation complete after 12s [id=projects/pdns-284302/global/addresses/f-revocrm-static-ip]
+google_compute_health_check.app_health_check: Creation complete after 12s [id=projects/pdns-284302/global/healthChecks/f-revocrm-health-check]
+time_sleep.wait_for_health_check: Creating...
+google_compute_network.vpc: Still creating... [10s elapsed]
+google_project_service.service_networking: Still creating... [20s elapsed]
+time_sleep.wait_for_health_check: Still creating... [10s elapsed]
+google_compute_network.vpc: Still creating... [20s elapsed]
+google_project_service.service_networking: Creation complete after 25s [id=pdns-284302/servicenetworking.googleapis.com]
+google_compute_network.vpc: Creation complete after 23s [id=projects/pdns-284302/global/networks/f-revocrm-vpc]
+google_compute_subnetwork.subnet: Creating...
+google_compute_firewall.allow_ssh: Creating...
+google_compute_global_address.private_ip_address: Creating...
+google_compute_firewall.allow_http: Creating...
+google_compute_firewall.allow_https: Creating...
+time_sleep.wait_for_health_check: Still creating... [20s elapsed]
+google_compute_subnetwork.subnet: Still creating... [10s elapsed]
+google_compute_firewall.allow_ssh: Still creating... [10s elapsed]
+google_compute_global_address.private_ip_address: Still creating... [10s elapsed]
+google_compute_firewall.allow_http: Still creating... [10s elapsed]
+google_compute_firewall.allow_https: Still creating... [10s elapsed]
+google_compute_firewall.allow_ssh: Creation complete after 12s [id=projects/pdns-284302/global/firewalls/f-revocrm-allow-ssh]
+google_compute_firewall.allow_http: Creation complete after 12s [id=projects/pdns-284302/global/firewalls/f-revocrm-allow-http]
+google_compute_global_address.private_ip_address: Creation complete after 12s [id=projects/pdns-284302/global/addresses/private-ip-for-sql]
+google_service_networking_connection.private_vpc_connection: Creating...
+google_compute_firewall.allow_https: Creation complete after 13s [id=projects/pdns-284302/global/firewalls/f-revocrm-allow-https]
+time_sleep.wait_for_health_check: Still creating... [30s elapsed]
+time_sleep.wait_for_health_check: Creation complete after 30s [id=2025-07-27T06:37:58Z]
+google_compute_subnetwork.subnet: Still creating... [20s elapsed]
+google_compute_subnetwork.subnet: Creation complete after 22s [id=projects/pdns-284302/regions/asia-northeast1/subnetworks/f-revocrm-subnet]
+google_compute_instance_template.app_template: Creating...
+google_compute_instance_template.app_template: Creation complete after 4s [id=projects/pdns-284302/global/instanceTemplates/f-revocrm-template-20250727063806809200000001]
+google_compute_region_instance_group_manager.app_group: Creating...
+google_compute_region_instance_group_manager.app_group: Still creating... [10s elapsed]
+google_compute_region_instance_group_manager.app_group: Still creating... [20s elapsed]
+google_compute_region_instance_group_manager.app_group: Still creating... [30s elapsed]
+google_compute_region_instance_group_manager.app_group: Still creating... [40s elapsed]
+google_compute_region_instance_group_manager.app_group: Still creating... [50s elapsed]
+google_compute_region_instance_group_manager.app_group: Creation complete after 54s [id=projects/pdns-284302/regions/asia-northeast1/instanceGroupManagers/f-revocrm-group]
+google_compute_backend_service.app_backend: Creating...
+╷
+│ Error: Error creating BackendService: googleapi: Error 400: The resource 'projects/pdns-284302/global/healthChecks/f-revocrm-health-check' is not ready, resourceNotReady
+│ 
+│   with google_compute_backend_service.app_backend,
+│   on compute.tf line 85, in resource "google_compute_backend_service" "app_backend":
+│   85: resource "google_compute_backend_service" "app_backend" {
+│ 
+╵
+╷
+│ Error: googleapi: Error 403: Permission denied to add peering for service 'servicenetworking.googleapis.com'.
+│ Help Token: AeNz4PhhzUZdF0-7_6i93Y4Hv9CoITeoSTvbYunxo0ED8T6Q9L3KOe6x6IlY4fAGyPaC2PCtux69eQHzLXT_zrVw8wrvpeBG8nE_cUbMi5A_EkTE
+│ Details:
+│ [
+│   {
+│     "@type": "type.googleapis.com/google.rpc.PreconditionFailure",
+│     "violations": [
+│       {
+│         "subject": "110002",
+│         "type": "googleapis.com"
+│       }
+│     ]
+│   },
+│   {
+│     "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+│     "domain": "servicenetworking.googleapis.com",
+│     "reason": "AUTH_PERMISSION_DENIED"
+│   }
+│ ]
+│ , forbidden
+│ 
+│   with google_service_networking_connection.private_vpc_connection,
+│   on database.tf line 15, in resource "google_service_networking_connection" "private_vpc_connection":
+│   15: resource "google_service_networking_connection" "private_vpc_connection" {
+│ 
+╵
+[INFO] Cleaning up temporary files...
+make: *** [Makefile:19: phase1] Error 1

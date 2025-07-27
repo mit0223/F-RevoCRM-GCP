@@ -112,12 +112,19 @@ init_terraform() {
 deploy_phase1() {
     print_status "Starting Phase 1 deployment (without SSL)..."
     
+    # Set default docker image if not set
+    if [ -z "$DOCKER_IMAGE" ]; then
+        DOCKER_IMAGE="${DOCKERHUB_USERNAME}/f-revocrm:latest"
+    fi
+    
     # Create terraform.tfvars
     cat > terraform.tfvars << EOF
 gcp_project_id = "$GCP_PROJECT_ID"
 domain_name    = "$DOMAIN_NAME"
 docker_image   = "$DOCKER_IMAGE"
 enable_ssl     = false
+db_user        = "frevocrm"
+db_password    = "secure_password_$(date +%s)"
 EOF
     
     # Plan and apply
@@ -137,12 +144,19 @@ EOF
 deploy_phase2() {
     print_status "Starting Phase 2 deployment (with SSL)..."
     
+    # Set default docker image if not set
+    if [ -z "$DOCKER_IMAGE" ]; then
+        DOCKER_IMAGE="${DOCKERHUB_USERNAME}/f-revocrm:latest"
+    fi
+    
     # Update terraform.tfvars to enable SSL
     cat > terraform.tfvars << EOF
 gcp_project_id = "$GCP_PROJECT_ID"
 domain_name    = "$DOMAIN_NAME"
 docker_image   = "$DOCKER_IMAGE"
 enable_ssl     = true
+db_user        = "frevocrm"
+db_password    = "secure_password_$(date +%s)"
 EOF
     
     # Plan and apply

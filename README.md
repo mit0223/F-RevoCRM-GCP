@@ -61,10 +61,11 @@ GitHub リポジトリの Settings > Secrets and variables > Codespaces で以�
 1. GCP Console でサービスアカウントを作成
 2. 以下の権限を付与：
    ```
-   - Compute Admin
-   - Security Admin
-   - Service Account User
-   - Project Editor
+   - Compute 管理者
+   - セキュリティ管理者
+   - サービスアカウントユーザー
+   - 編集者
+   - サービスネットワーキング管理者
    ```
 3. キーを JSON 形式でダウンロード
 4. Base64 でエンコード：
@@ -77,6 +78,13 @@ GitHub リポジトリの Settings > Secrets and variables > Codespaces で以�
 1. Docker Hub にログイン
 2. Account Settings > Security > New Access Token
 3. Read, Write, Delete 権限を選択
+
+#### API の有効化
+
+GCP プロジェクトで以下の API を有効化
+
+Cloud SQL Admin API
+Cloud Resource Manager API
 
 ### 2. Codespaces の起動
 
@@ -301,3 +309,8 @@ terraform show
 ## ライセンス
 
 MIT License
+
+## インストールの注意事項
+
+データベースのユーザ名、パスワードは terraform/terraform.tfvars の値を指定し、「新しくデータベースを作成する」をチェックして同じユーザ名パスワードを入れてください。
+

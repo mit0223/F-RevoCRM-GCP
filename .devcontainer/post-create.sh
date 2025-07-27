@@ -46,7 +46,7 @@ if [ -n "$GCP_SERVICE_ACCOUNT_KEY" ]; then
     echo "Setting up GCP authentication..."
     echo "$GCP_SERVICE_ACCOUNT_KEY" | base64 -d > /tmp/gcp-key.json
     gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
-    gcloud config set project "$GCP_PROJECT_ID"
+    gcloud config --quiet set project "$GCP_PROJECT_ID"
     rm /tmp/gcp-key.json
 fi
 
