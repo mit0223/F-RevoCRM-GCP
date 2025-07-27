@@ -53,7 +53,7 @@ resource "google_compute_region_instance_group_manager" "app_group" {
 
   named_port {
     name = "http"
-    port = 3000
+    port = 80
   }
 
   auto_healing_policies {
@@ -70,8 +70,8 @@ resource "google_compute_health_check" "app_health_check" {
   check_interval_sec = 30
 
   http_health_check {
-    port         = 3000
-    request_path = "/health"
+    port         = 80
+    request_path = "/"
   }
 }
 
@@ -119,9 +119,9 @@ resource "google_compute_target_http_proxy" "app_http_proxy" {
 }
 
 resource "google_compute_target_https_proxy" "app_https_proxy" {
-  count           = var.enable_ssl ? 1 : 0
-  name            = "${var.app_name}-https-proxy"
-  url_map         = google_compute_url_map.app_url_map_https[0].id
+  count            = var.enable_ssl ? 1 : 0
+  name             = "${var.app_name}-https-proxy"
+  url_map          = google_compute_url_map.app_url_map_https[0].id
   ssl_certificates = [google_compute_managed_ssl_certificate.app_ssl_cert[0].id]
 }
 

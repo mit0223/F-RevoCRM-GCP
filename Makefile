@@ -81,7 +81,7 @@ docker-build: ## Build Docker image locally
 
 docker-run: ## Run Docker container locally
 	@echo "Running Docker container locally..."
-	@docker run -p 3000:3000 f-revocrm:local
+	@docker run -p 8080:80 f-revocrm:local
 
 # Development helpers
 dev-setup: ## Set up development environment
@@ -97,4 +97,4 @@ logs: ## View application logs from GCP
 # Health check
 health: ## Check application health
 	@echo "Checking application health..."
-	@curl -f http://$(shell cd terraform && terraform output -raw domain_name)/health || echo "Health check failed"
+	@curl -f http://localhost:8080/ || echo "Health check failed"

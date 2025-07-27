@@ -30,3 +30,13 @@ output "instance_group_manager" {
     region = google_compute_region_instance_group_manager.app_group.region
   }
 }
+
+output "db_connection_name" {
+  description = "The connection name of the Cloud SQL instance."
+  value       = google_sql_database_instance.mysql_instance.connection_name
+}
+
+output "db_private_ip" {
+  description = "The private IP address of the Cloud SQL instance."
+  value       = google_sql_database_instance.mysql_instance.private_ip_address
+}

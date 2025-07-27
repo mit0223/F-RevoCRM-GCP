@@ -42,3 +42,15 @@ variable "enable_ssl" {
   type        = bool
   default     = false
 }
+
+variable "db_user" {
+  description = "The username for the database user."
+  type        = string
+  sensitive   = true
+}
+
+variable "db_password" {
+  description = "The password for the database user."
+  type        = string
+  sensitive   = true
+}

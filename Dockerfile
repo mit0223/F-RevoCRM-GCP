@@ -1,49 +1,56 @@
 # F-RevoCRM Dockerfile
-# Multi-stage build for optimized production image
+# This Dockerfile sets up an environment to run F-RevoCRM.
 
-# Build stage
-FROM node:18-alpine AS builder
+# Use an official PHP image with Apache
+FROM php:8.1-apache
 
-WORKDIR /app
+# Install system dependencies required by F-RevoCRM and PHP extensions
+RUN apt-get update && apt-get install -y \
+  git \
+  unzip \
+  libzip-dev \
+  libpng-dev \
+  libjpeg-dev \
+  libfreetype-dev \
+  libldap2-dev \
+  libc-client-dev \
+  libkrb5-dev \
+  && rm -rf /var/lib/apt/lists/*
 
-# Copy package files
-COPY package*.json ./
+# Configure and install PHP extensions required by F-RevoCRM
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+  && docker-php-ext-install -j$(nproc) gd \
+  && docker-php-ext-install zip \
+  && docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ \
+  && docker-php-ext-install ldap \
+  && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
+  && docker-php-ext-install imap \
+  && docker-php-ext-install pdo pdo_mysql mysqli opcache
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Copy source code
-COPY . .
+# Download and install F-RevoCRM
+RUN cd /tmp \
+  && curl -L -o frevocrm.zip https://github.com/thinkingreed-inc/F-RevoCRM/archive/refs/tags/v7.4.1.zip \
+  && unzip frevocrm.zip \
+  && mv F-RevoCRM-7.4.1/* /var/www/html/ \
+  && mv F-RevoCRM-7.4.1/.* /var/www/html/ 2>/dev/null || true \
+  && rm -rf /tmp/*
 
-# Build the application (adjust based on F-RevoCRM's build process)
-RUN npm run build 2>/dev/null || echo "No build script found, skipping build step"
+# Install composer dependencies
+WORKDIR /var/www/html
+RUN composer install --no-dev --optimize-autoloader
 
-# Production stage
-FROM node:18-alpine AS production
+# Set permissions for Apache
+RUN chown -R www-data:www-data /var/www/html \
+  && chmod -R 755 /var/www/html
 
-WORKDIR /app
+# Enable Apache rewrite module for pretty URLs
+RUN a2enmod rewrite
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
+# Expose port 80 for Apache
+EXPOSE 80
 
-# Copy built application from builder stage
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
-COPY --from=builder --chown=nextjs:nodejs /app .
-
-# Install security updates
-RUN apk --no-cache upgrade
-
-# Switch to non-root user
-USER nextjs
-
-# Expose port
-EXPOSE 3000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
-
-# Start the application
-CMD ["npm", "start"]
+# The default command for the container is to start Apache
+CMD ["apache2-foreground"]
