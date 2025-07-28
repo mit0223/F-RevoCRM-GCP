@@ -140,6 +140,71 @@ EOF
     print_warning "Wait for DNS propagation before proceeding to Phase 2"
 }
 
+# Deploy Phase 1 Infrastructure (without containers)
+deploy_phase1_infra() {
+    print_status "Starting Phase 1 infrastructure deployment (without containers)..."
+    
+    # Set default docker image if not set
+    if [ -z "$DOCKER_IMAGE" ]; then
+        DOCKER_IMAGE="${DOCKERHUB_USERNAME}/f-revocrm:latest"
+    fi
+    
+    # Create terraform.tfvars with container deployment disabled
+    cat > terraform.tfvars << EOF
+gcp_project_id = "$GCP_PROJECT_ID"
+domain_name    = "$DOMAIN_NAME"
+docker_image   = "$DOCKER_IMAGE"
+enable_ssl     = false
+deploy_containers = false
+db_user        = "frevocrm"
+db_password    = "secure_password_$(date +%s)"
+EOF
+    
+    # Plan and apply infrastructure only
+    terraform plan -var-file=terraform.tfvars
+    terraform apply -var-file=terraform.tfvars -auto-approve
+    
+    # Get static IP
+    export STATIC_IP=$(terraform output -raw static_ip_address)
+    
+    print_success "Phase 1 infrastructure deployment completed"
+    print_status "Static IP Address: $STATIC_IP"
+    print_status "Cloud Storage bucket and database ready for F-RevoCRM upload"
+}
+
+# Deploy Phase 1 Containers (after F-RevoCRM upload)
+deploy_phase1_containers() {
+    print_status "Starting Phase 1 container deployment..."
+    
+    # Set default docker image if not set
+    if [ -z "$DOCKER_IMAGE" ]; then
+        DOCKER_IMAGE="${DOCKERHUB_USERNAME}/f-revocrm:latest"
+    fi
+    
+    # Update terraform.tfvars to enable container deployment
+    cat > terraform.tfvars << EOF
+gcp_project_id = "$GCP_PROJECT_ID"
+domain_name    = "$DOMAIN_NAME"
+docker_image   = "$DOCKER_IMAGE"
+enable_ssl     = false
+deploy_containers = true
+db_user        = "frevocrm"
+db_password    = "secure_password_$(date +%s)"
+EOF
+    
+    # Plan and apply with containers
+    terraform plan -var-file=terraform.tfvars
+    terraform apply -var-file=terraform.tfvars -auto-approve
+    
+    # Get static IP
+    export STATIC_IP=$(terraform output -raw static_ip_address)
+    
+    print_success "Phase 1 container deployment completed"
+    print_warning "Static IP Address: $STATIC_IP"
+    print_warning "Please add DNS A record: $DOMAIN_NAME -> $STATIC_IP"
+    print_warning "Wait for DNS propagation before proceeding to Phase 2"
+}
+
 # Deploy Phase 2 (with SSL)
 deploy_phase2() {
     print_status "Starting Phase 2 deployment (with SSL)..."
@@ -155,6 +220,7 @@ gcp_project_id = "$GCP_PROJECT_ID"
 domain_name    = "$DOMAIN_NAME"
 docker_image   = "$DOCKER_IMAGE"
 enable_ssl     = true
+deploy_containers = true
 db_user        = "frevocrm"
 db_password    = "secure_password_$(date +%s)"
 EOF
@@ -209,6 +275,18 @@ main() {
             init_terraform
             deploy_phase1
             ;;
+        "phase1-infra")
+            check_env_vars
+            setup_gcp_auth
+            init_terraform
+            deploy_phase1_infra
+            ;;
+        "phase1-containers")
+            check_env_vars
+            setup_gcp_auth
+            init_terraform
+            deploy_phase1_containers
+            ;;
         "phase2")
             check_env_vars
             setup_gcp_auth
@@ -247,7 +325,7 @@ main() {
             fi
             ;;
         *)
-            print_error "Usage: $0 {build|phase1|phase2|all|destroy}"
+            print_error "Usage: $0 {build|phase1|phase1-infra|phase1-containers|phase2|all|destroy}"
             exit 1
             ;;
     esac

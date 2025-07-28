@@ -14,9 +14,13 @@ build: ## Build and push Docker image to Docker Hub
 	./scripts/deploy.sh build
 
 # Phase 1: Deploy without SSL to get static IP
-phase1: ## Deploy Phase 1 (without SSL) to get static IP
-	@echo "Deploying Phase 1 (without SSL)..."
-	./scripts/deploy.sh phase1
+phase1: ## Deploy Phase 1 (Infrastructure → F-RevoCRM Upload → Containers)
+	@echo "Phase 1: Deploying infrastructure (without containers)..."
+	./scripts/deploy.sh phase1-infra
+	@echo "Phase 1: Uploading F-RevoCRM files to Cloud Storage..."
+	./scripts/upload-frevocrm.sh
+	@echo "Phase 1: Deploying Cloud Run containers..."
+	./scripts/deploy.sh phase1-containers
 
 # Phase 2: Deploy with SSL after DNS setup
 phase2: ## Deploy Phase 2 (with SSL) after DNS configuration
@@ -32,6 +36,12 @@ deploy: ## Full deployment (Phase 1, then manual DNS setup, then run 'make phase
 destroy: ## Destroy all GCP resources
 	@echo "Destroying all resources..."
 	./scripts/deploy.sh destroy
+
+# Safe destroy with VPC dependency handling
+destroy-safe: ## Safely destroy all resources handling VPC peering dependencies
+	@echo "Safely destroying all resources..."
+	chmod +x ./scripts/destroy.sh
+	./scripts/destroy.sh
 
 # Check deployment status
 status: ## Check the status of the deployment
@@ -98,3 +108,16 @@ logs: ## View application logs from GCP
 health: ## Check application health
 	@echo "Checking application health..."
 	@curl -f http://localhost:8080/ || echo "Health check failed"
+
+# F-RevoCRM specific targets
+upload-frevocrm: ## Upload F-RevoCRM files to Cloud Storage
+	@echo "Uploading F-RevoCRM files to Cloud Storage..."
+	./scripts/upload-frevocrm.sh
+
+clear-frevocrm: ## Clear F-RevoCRM files from Cloud Storage
+	@echo "Clearing F-RevoCRM files from Cloud Storage..."
+	@cd terraform && gsutil -m rm -r gs://$$(terraform output -raw storage_bucket_name)/* || echo "Bucket is already empty or does not exist"
+
+verify-frevocrm: ## Verify F-RevoCRM files in Cloud Storage
+	@echo "Verifying F-RevoCRM files in Cloud Storage..."
+	@cd terraform && gsutil ls gs://$$(terraform output -raw storage_bucket_name)/index.php > /dev/null 2>&1 && echo "F-RevoCRM files are present" || echo "F-RevoCRM files are missing"

@@ -12,4 +12,12 @@ spec:
         limits:
           memory: "1Gi"
           cpu: "500m"
+      volumeMounts:
+        - name: app-storage
+          mountPath: /var/www/html
+  volumes:
+    - name: app-storage
+      hostPath:
+        path: /mnt/stateful_partition/app-storage
+        type: DirectoryOrCreate
   restartPolicy: Always

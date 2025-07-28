@@ -25,12 +25,27 @@ output "ssl_certificate_name" {
 
 output "cloudrun_service_url" {
   description = "Cloud Run service URL"
-  value       = google_cloud_run_v2_service.app_service.uri
+  value       = var.deploy_containers ? google_cloud_run_v2_service.app_service[0].uri : "Containers not deployed"
 }
 
 output "cloudrun_service_name" {
   description = "Cloud Run service name"
-  value       = google_cloud_run_v2_service.app_service.name
+  value       = var.deploy_containers ? google_cloud_run_v2_service.app_service[0].name : "Containers not deployed"
+}
+
+output "app_storage_bucket" {
+  description = "Cloud Storage bucket for persistent application data"
+  value       = google_storage_bucket.app_storage.name
+}
+
+output "storage_bucket_name" {
+  description = "Cloud Storage bucket name (for gsutil commands)"
+  value       = google_storage_bucket.app_storage.name
+}
+
+output "app_storage_url" {
+  description = "Cloud Storage bucket URL"
+  value       = google_storage_bucket.app_storage.url
 }
 
 output "db_connection_name" {

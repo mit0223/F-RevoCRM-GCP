@@ -1,0 +1,43 @@
+#!/bin/sh
+set -e
+
+# first arg is `-f` or `--some-option`
+if [ "${1#-}" != "$1" ]; then
+        set -- apache2-foreground "$@"
+fi
+
+# Check if F-RevoCRM is already installed
+if [ -e "/var/www/html/index.php" ] && [ -e "/var/www/html/config.inc.php" ]; then
+    echo "F-RevoCRM already installed, skipping installation."
+else
+    echo "Setting up F-RevoCRM from Cloud Storage..."
+    
+    # Run composer install if composer.json exists
+    if [ -f "/var/www/html/composer.json" ]; then
+        echo "Found composer.json - Installing PHP dependencies with Composer..."
+        cd /var/www/html
+                
+        composer install --no-dev --optimize-autoloader --no-interaction --verbose 2>&1 || {
+            echo "Warning: Composer install failed, but continuing..."
+            echo "Checking if vendor directory exists..."
+            ls -la /var/www/html/ | grep vendor || echo "No vendor directory found"
+        }
+        
+        # Verify installation
+        if [ -d "/var/www/html/vendor" ]; then
+            echo "SUCCESS: Vendor directory created"
+            echo "Installed packages:"
+            ls -la /var/www/html/vendor/ | head -10
+        else
+            echo "WARNING: Vendor directory not found after composer install"
+        fi
+    else
+        echo "No composer.json found - skipping dependency installation"
+        echo "Contents of /var/www/html:"
+        ls -la /var/www/html/ | head -10
+    fi
+    
+    echo "F-RevoCRM setup completed."
+fi
+
+exec "$@"

@@ -39,3 +39,18 @@ resource "google_project_service" "secretmanager_api" {
   service            = "secretmanager.googleapis.com"
   disable_on_destroy = false
 }
+
+resource "google_project_service" "storage_api" {
+  service            = "storage.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "cloudresourcemanager_api" {
+  service            = "cloudresourcemanager.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "sqladmin_api" {
+  service            = "sqladmin.googleapis.com"
+  disable_on_destroy = false
+}

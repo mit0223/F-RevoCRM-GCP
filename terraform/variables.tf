@@ -54,3 +54,9 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
+variable "deploy_containers" {
+  description = "Whether to deploy Cloud Run containers"
+  type        = bool
+  default     = true
+}

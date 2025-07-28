@@ -18,6 +18,11 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
 
   depends_on = [google_project_service.service_networking]
+
+  # lifecycle {
+  #   # Prevent destruction unless explicitly forced
+  #   prevent_destroy = false
+  # }
 }
 
 # Cloud SQL for MySQL instance
@@ -85,6 +90,11 @@ resource "google_sql_database_instance" "mysql_instance" {
   deletion_protection = false # Set to true for production environments
 
   depends_on = [google_service_networking_connection.private_vpc_connection]
+
+  lifecycle {
+    # Ensure the database is destroyed before the VPC connection
+    create_before_destroy = false
+  }
 }
 
 # Database for F-RevoCRM
